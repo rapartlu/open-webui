@@ -1081,10 +1081,11 @@ OPENAI_API_BASE_URLS = [
 ]
 OPENAI_API_BASE_URLS = PersistentConfig('OPENAI_API_BASE_URLS', 'openai.api_base_urls', OPENAI_API_BASE_URLS)
 
+OPENAI_API_CONFIGS_DEFAULT = json.loads(os.environ.get('OPENAI_API_CONFIGS', '{}'))
 OPENAI_API_CONFIGS = PersistentConfig(
     'OPENAI_API_CONFIGS',
     'openai.api_configs',
-    {},
+    OPENAI_API_CONFIGS_DEFAULT,
 )
 
 # Get the actual OpenAI API key based on the base URL
