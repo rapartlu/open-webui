@@ -181,17 +181,21 @@ async def get_headers_and_cookies(
         cookies = request.cookies
 
         oauth_token = None
+        oauth_session_id = request.cookies.get('oauth_session_id', None)
+        log.info(f'[oauth-debug] system_oauth: session_id={oauth_session_id}, user_id={user.id if user else None}')
         try:
-            if request.cookies.get('oauth_session_id', None):
+            if oauth_session_id:
                 oauth_token = await request.app.state.oauth_manager.get_oauth_token(
                     user.id,
-                    request.cookies.get('oauth_session_id', None),
+                    oauth_session_id,
                 )
+                log.info(f'[oauth-debug] got oauth_token: {bool(oauth_token)}, keys={list(oauth_token.keys()) if oauth_token else []}')
         except Exception as e:
             log.error(f'Error getting OAuth token: {e}')
 
         if oauth_token:
             token = f'{oauth_token.get("access_token", "")}'
+            log.info(f'[oauth-debug] forwarding token: len={len(token)}')
 
     elif auth_type in ('azure_ad', 'microsoft_entra_id'):
         token = get_microsoft_entra_id_access_token()
