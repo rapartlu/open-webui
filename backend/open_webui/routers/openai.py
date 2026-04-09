@@ -167,6 +167,7 @@ async def get_headers_and_cookies(
 
     token = None
     auth_type = config.get('auth_type')
+    log.info(f"[oauth-debug] auth_type={auth_type}, config={config}")
 
     if auth_type == 'bearer' or auth_type is None:
         # Default to bearer if not specified
