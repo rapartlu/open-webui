@@ -1082,7 +1082,6 @@ OPENAI_API_BASE_URLS = [
 OPENAI_API_BASE_URLS = PersistentConfig('OPENAI_API_BASE_URLS', 'openai.api_base_urls', OPENAI_API_BASE_URLS)
 
 OPENAI_API_CONFIGS_DEFAULT = json.loads(os.environ.get('OPENAI_API_CONFIGS', '{}'))
-log.info(f"OPENAI_API_CONFIGS from env: {OPENAI_API_CONFIGS_DEFAULT}")
 OPENAI_API_CONFIGS = PersistentConfig(
     'OPENAI_API_CONFIGS',
     'openai.api_configs',

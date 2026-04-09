@@ -167,7 +167,6 @@ async def get_headers_and_cookies(
 
     token = None
     auth_type = config.get('auth_type')
-    log.info(f"[oauth-debug] auth_type={auth_type}, config={config}")
 
     if auth_type == 'bearer' or auth_type is None:
         # Default to bearer if not specified
@@ -182,20 +181,17 @@ async def get_headers_and_cookies(
 
         oauth_token = None
         oauth_session_id = request.cookies.get('oauth_session_id', None)
-        log.info(f'[oauth-debug] system_oauth: session_id={oauth_session_id}, user_id={user.id if user else None}')
         try:
             if oauth_session_id:
                 oauth_token = await request.app.state.oauth_manager.get_oauth_token(
                     user.id,
                     oauth_session_id,
                 )
-                log.info(f'[oauth-debug] got oauth_token: {bool(oauth_token)}, keys={list(oauth_token.keys()) if oauth_token else []}')
         except Exception as e:
             log.error(f'Error getting OAuth token: {e}')
 
         if oauth_token:
             token = f'{oauth_token.get("access_token", "")}'
-            log.info(f'[oauth-debug] forwarding token: len={len(token)}')
 
     elif auth_type in ('azure_ad', 'microsoft_entra_id'):
         token = get_microsoft_entra_id_access_token()
