@@ -98,7 +98,29 @@ class ExcelLoader:
         text_parts = []
         xls = pd.ExcelFile(self.file_path)
         for sheet_name in xls.sheet_names:
-            df = pd.read_excel(xls, sheet_name=sheet_name)
+            # Read without headers so we can skip leading empty/sparse rows.
+            # Spreadsheets often have blank rows or title/metadata rows above
+            # the actual header, which pandas otherwise treats as the header.
+            raw = pd.read_excel(xls, sheet_name=sheet_name, header=None)
+            if raw.empty:
+                continue
+
+            # Find the first row with at least 2 non-null cells - treat that
+            # as the header. Single-cell rows are usually titles, not headers.
+            header_idx = None
+            for idx, row in raw.iterrows():
+                if row.notna().sum() >= 2:
+                    header_idx = idx
+                    break
+
+            if header_idx is None:
+                # No plausible header row - emit raw values as-is.
+                df = raw
+            else:
+                df = raw.iloc[header_idx + 1 :].copy()
+                df.columns = raw.iloc[header_idx]
+                df = df.dropna(how='all').reset_index(drop=True)
+
             text_parts.append(f'Sheet: {sheet_name}\n{df.to_csv(index=False)}')
         return [
             Document(
