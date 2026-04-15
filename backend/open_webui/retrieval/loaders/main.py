@@ -87,7 +87,7 @@ known_source_ext = [
 
 
 class ExcelLoader:
-    """Fallback Excel loader using pandas when unstructured is not installed."""
+    """Excel loader using pandas. Emits CSV per sheet to preserve column structure."""
 
     def __init__(self, file_path):
         self.file_path = file_path
@@ -99,7 +99,7 @@ class ExcelLoader:
         xls = pd.ExcelFile(self.file_path)
         for sheet_name in xls.sheet_names:
             df = pd.read_excel(xls, sheet_name=sheet_name)
-            text_parts.append(f'Sheet: {sheet_name}\n{df.to_string(index=False)}')
+            text_parts.append(f'Sheet: {sheet_name}\n{df.to_csv(index=False)}')
         return [
             Document(
                 page_content='\n\n'.join(text_parts),
@@ -442,17 +442,10 @@ class Loader:
                 'application/vnd.ms-excel',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ] or file_ext in ['xls', 'xlsx']:
-                try:
-                    from langchain_community.document_loaders import UnstructuredExcelLoader
-
-                    loader = UnstructuredExcelLoader(file_path)
-                except ImportError:
-                    log.warning(
-                        "The 'unstructured' package is not installed. "
-                        'Falling back to pandas for Excel file loading. '
-                        'Install unstructured for better results: pip install unstructured'
-                    )
-                    loader = ExcelLoader(file_path)
+                # Use pandas-based ExcelLoader which emits CSV per sheet.
+                # UnstructuredExcelLoader defaults to mode="single" which flattens
+                # cells into whitespace-separated values, destroying column structure.
+                loader = ExcelLoader(file_path)
             elif file_content_type in [
                 'application/vnd.ms-powerpoint',
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
